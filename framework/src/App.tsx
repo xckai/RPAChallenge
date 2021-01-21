@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
-import './App.css';
+import './App.less';
+import { Router, Route } from 'react-router';
+import { createBrowserHistory } from 'history';
+import Login from './pages/Login';
+import { MainPage } from './pages/Main';
+import { TopicInfo } from './pages/TopicInfo';
 const { Header, Footer, Sider, Content } = Layout;
+const history = createBrowserHistory();
 class App extends React.Component<{}, { title: string }> {
   setTitle(title: string) {
     this.setState({
@@ -10,19 +16,12 @@ class App extends React.Component<{}, { title: string }> {
   }
   render() {
     return (
-      <Layout style={{ height: '100%' }}>
-        <Header className="header" title="RPA Challenge">
-          <div className="left-title">
-            <strong>RPA Challenge</strong>
-          </div>
-          <div className="mid-title">{this.state?.title}</div>
-          <div className="user-info">{}</div>
-        </Header>
-        <Content className="content">Content</Content>
-        <Footer>
-            butto
-        </Footer>
-      </Layout>
+      <Router history={history}>
+        <Route path="/" component={MainPage}>
+          <Route path="/login" component={Login} />
+          <Route path="/topicinfo" component={TopicInfo} />
+        </Route>
+      </Router>
     );
   }
 }
