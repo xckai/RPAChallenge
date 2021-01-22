@@ -1,24 +1,31 @@
 import Layout, { Content } from 'antd/lib/layout/layout';
-import React, { useState } from 'react';
+import React from 'react';
 import Bar from '../components/Bar';
 import { Button, Space, Table, Tag } from 'antd';
 
 interface ITopicModle {
+  /** 测试id */
   id: string;
+  /** 测试题目 */
   title: string;
+  /** 测试所在url */
   url: string;
-  passed: boolean;
-  rank: number;
+  /** 是否已通过测试 */
+  isPassed: boolean;
+  /** 最佳用时 */
+  timeCost?: number;
+  /** 耗时排名 */
+  rank?: number;
 }
 export class MainPage extends React.PureComponent {
   state: {
     Topics: Array<ITopicModle>;
   } = {
     Topics: [
-      { id: '11', title: 'daffacadfasdf', url: '..', passed: true, rank: 33 },
-      { id: '11', title: 'daff阿发达acadfasdf', url: '..', passed: true, rank: 33 },
-      { id: '11', title: '阿斯蒂芬', url: '..', passed: false, rank: 33 },
-      { id: '11', title: '大多数', url: '..', passed: true, rank: 33 }
+      { id: '11', title: 'daffacadfasdf', url: '..', isPassed: true, rank: 33, timeCost: 11 },
+      { id: '11', title: 'daff阿发达acadfasdf', url: '..', isPassed: true, rank: 33, timeCost: 13 },
+      { id: '11', title: '阿斯蒂芬', url: '..', isPassed: false, rank: -1, timeCost: -1 },
+      { id: '11', title: '大多数', url: '..', isPassed: true, rank: 33, timeCost: 12 }
     ]
   };
   renderList() {
@@ -36,22 +43,30 @@ export class MainPage extends React.PureComponent {
       },
       {
         title: '是否已通过',
-        dataIndex: 'passed',
-        key: 'passed',
+        dataIndex: 'isPassed',
+        key: 'isPassed',
         render: (passed: boolean) => (passed ? <Tag color="green">已通过</Tag> : <Tag color="red">未通过</Tag>)
+      },
+      {
+        title: '耗时',
+        dataIndex: 'timeCost',
+        key: 'timeCost',
+        render: (timeCost: number, recoder: ITopicModle) => (timeCost >= 0 ? <span>{recoder.timeCost}s</span> : '--')
       },
       {
         title: '排名',
         dataIndex: 'rank',
-        key: 'rank'
+        key: 'rank',
+        render: (rank: number, recoder: ITopicModle) => (rank >= 0 ? <span>{rank}</span> : '--')
       },
       {
         title: '',
-        key: 'action',
-        render: () => (
+        dataIndex: 'id',
+        key: 'id',
+        render: (id: string) => (
           <Space size="middle">
             <Button type="ghost">
-              <a>进入测试</a>
+              <a href={`/topicdetail/${id}`}>进入测试</a>
             </Button>
           </Space>
         )
