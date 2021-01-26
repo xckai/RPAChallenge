@@ -10,7 +10,7 @@ const opts = {
 const log = require('simple-node-logger').createRollingFileLogger( opts );
 const app = new Koa();
 app.listen(9000);
-app.use(route.get('/',appMidware));
+app.use(appMidware);
 
 app.on('error', (err, ctx) => {
   log.error('server error', err, ctx)
