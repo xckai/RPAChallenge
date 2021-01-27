@@ -30,11 +30,16 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
     isTestBegin: false,
     showDetail: true,
     topicDetail: {
-      title: '啊哈哈哈哈哈哈',
+      title: '【基础】 基础表单填写',
       url: '/base_form/index.html',
       name: 'base_form',
-      introductionHTMLStr:
-        '卡速度快发卡联发科九分裤拉法基阿里斯顿会计法开发机奥斯卡了房价奥斯卡<br/> <strong>非拉科技噢诶</strong> as代理费为加快了甲方可垃圾大法师打发第三方碍事法师打发点阿斯蒂芬的福利卡解锁口令费劲哎栾克军啦返回搞个地方，卡速度快发卡联发科九分裤拉法基阿里斯顿会计法开发机奥斯卡了房价奥斯卡非拉科技噢诶as代理费为加快了甲方可垃圾的福利卡解锁口令费劲哎栾克军啦返回搞个地方，卡速度快发卡联发科九分裤拉法基阿里斯顿会计法开发机奥斯卡了房价奥斯卡非拉科技噢诶as代理费为加快了甲方可垃圾的福利卡解锁口令费劲哎栾克军啦返回搞个地方'
+      introductionHTMLStr: `<strong>请使用RPA填写表单字段，并提交表单</strong><br/>姓名： 张小扩<br/>
+                            性别： 男<br/> 年龄： 20<br/>
+                            出生年月日： 2000-01-01 <br/>
+                            婚姻状况： 保密<br/>
+                            住址： 中国上海市徐汇区虹梅国际广场902室<br/>
+                            同意用户条例
+                            `
     }
   };
   frameRef = React.createRef<HTMLIFrameElement>();
@@ -73,6 +78,7 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
                   appName: this.state.topicDetail.name
                 })
                 .then((res) => {
+                  res.data.passed ?
                   Modal.success({
                     title: '通过测试',
                     content: (
@@ -88,7 +94,8 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
                     onOk() {
                       (window.location as any).href = '/main/index.html';
                     }
-                  });
+                  }):
+                  message.error(res.data.result ?? "未通过校验，请检查修改后重新提交！" );
                 })
                 .catch((err) => {
                   console && console.error(err);

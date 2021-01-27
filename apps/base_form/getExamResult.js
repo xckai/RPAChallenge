@@ -6,6 +6,8 @@ function getExamResult() {
     for (var i = 0; i < formArray.length; ++i) {
       formData[formArray[i].name] = formArray[i].value;
     }
+
+    formData.age = $("#age").val();
     formData.birthday = $("#birthday").val();
     if (formData.name != "" && formData.gender != "" && formData.age != "" && formData.birthday != "" && formData.marry != "" && formData.address != "" && formData.aggree != "") {
       res(formData);

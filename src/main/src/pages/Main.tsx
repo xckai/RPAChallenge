@@ -22,10 +22,7 @@ export class MainPage extends React.PureComponent {
     Topics: Array<ITopicModle>;
   } = {
     Topics: [
-      { id: '0', title: '【基础】 基础表单填写', url: '/apps/base_form/index.html', isPassed: false, rank: 33, timeCost: 11 },
-      { id: '11', title: 'daff阿发达acadfasdf', url: '..', isPassed: true, rank: 33, timeCost: 13 },
-      { id: '11', title: '阿斯蒂芬', url: '..', isPassed: false, rank: -1, timeCost: -1 },
-      { id: '11', title: '大多数', url: '..', isPassed: true, rank: 33, timeCost: 12 }
+      { id: '1', title: '【基础】 基础表单填写', url: '/apps/base_form/index.html', isPassed: false, rank: -1, timeCost: -1 },
     ]
   };
   renderList() {

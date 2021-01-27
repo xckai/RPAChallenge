@@ -3,7 +3,7 @@ const gulp = require('gulp');
 const clean = require('gulp-clean');
 const path = require('path');
 gulp.task('clean', () => {
-  return gulp.src(path.resolve(__dirname, './release/**/*.*')).pipe(clean({ force: true }));
+  return gulp.src(path.resolve(__dirname, './release/**/*.*'),{read: false}).pipe(clean({ force: true }));
 });
 gulp.task('copy:main', () => {
   return gulp.src(path.resolve(__dirname, './src/main/build/**/*.*')).pipe(gulp.dest('./release/apps/main'));
