@@ -1,4 +1,5 @@
 {
-  "remoteServerURL":"",
-   "port":9000
+  "remoteServerURL":"http://10.10.10.237:8080/",
+   "port":9000,
+   "logLevel": "debug"
 }

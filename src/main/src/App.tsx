@@ -6,7 +6,6 @@ import { createBrowserHistory } from 'history';
 import Login from './pages/Login';
 import { MainPage } from './pages/Main';
 import { TopicInfo } from './pages/TopicDetail';
-const { Header, Footer, Sider, Content } = Layout;
 const history = createBrowserHistory();
 class App extends React.Component<{}, { title: string }> {
   setTitle(title: string) {

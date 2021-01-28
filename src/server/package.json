@@ -9,10 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.21.1",
+    "http-proxy-middleware": "^1.0.6",
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
     "koa-route": "^3.2.0",
+    "koa2-connect": "^1.0.2",
     "mime-types": "^2.1.28",
+    "path-to-regexp": "^6.2.0",
     "simple-node-logger": "^18.12.24"
   }
 }

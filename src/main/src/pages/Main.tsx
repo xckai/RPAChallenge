@@ -1,30 +1,39 @@
 import Layout, { Content } from 'antd/lib/layout/layout';
 import React from 'react';
 import Bar from '../components/Bar';
-import { Button, Space, Table, Tag } from 'antd';
+import { Button, message, Space, Table, Tag } from 'antd';
+import { getUserExamList } from '../service';
 
 interface ITopicModle {
   /** 测试id */
-  id: string;
+  Id: string;
   /** 测试题目 */
-  title: string;
+  Title: string;
   /** 测试所在url */
-  url: string;
+  URL: string;
   /** 是否已通过测试 */
-  isPassed: boolean;
+  IsPassed: boolean;
   /** 最佳用时 */
-  timeCost?: number;
+  TimeCost?: number;
   /** 耗时排名 */
-  rank?: number;
+  Rank?: number;
 }
 export class MainPage extends React.PureComponent {
   state: {
-    Topics: Array<ITopicModle>;
+    topics: Array<ITopicModle>;
+    isBusy:boolean
   } = {
-    Topics: [
-      { id: '1', title: '【基础】 基础表单填写', url: '/apps/base_form/index.html', isPassed: false, rank: -1, timeCost: -1 },
-    ]
+    topics: [],
+    isBusy: true
   };
+  componentDidMount(){
+    getUserExamList().then(resp=>this.setState({
+      topics: resp.data?.response?.data??[],
+      isBusy: false
+    })).catch((err:any)=>{
+      message.error(`获取列表失败，请稍后刷新重试! (${err.message})`);
+    })
+  }
   renderList() {
     const columns = [
       {
@@ -34,32 +43,32 @@ export class MainPage extends React.PureComponent {
       },
       {
         title: '题目名称',
-        dataIndex: 'title',
-        key: 'title',
+        dataIndex: 'Title',
+        key: 'Title',
         render: (text: string) => <span>{text}</span>
       },
       {
         title: '是否已通过',
-        dataIndex: 'isPassed',
-        key: 'isPassed',
+        dataIndex: 'IsPassed',
+        key: 'IsPassed',
         render: (passed: boolean) => (passed ? <Tag color="green">已通过</Tag> : <Tag color="red">未通过</Tag>)
       },
       {
         title: '耗时',
-        dataIndex: 'timeCost',
-        key: 'timeCost',
-        render: (timeCost: number, recoder: ITopicModle) => (timeCost >= 0 ? <span>{recoder.timeCost}s</span> : '--')
+        dataIndex: 'TimeCost',
+        key: 'TimeCost',
+        render: (timeCost: number, recoder: ITopicModle) => (recoder.IsPassed  ? <span>{(recoder.TimeCost??0) / 1000}s</span> : '--')
       },
       {
         title: '排名',
-        dataIndex: 'rank',
-        key: 'rank',
-        render: (rank: number, recoder: ITopicModle) => (rank >= 0 ? <span>{rank}</span> : '--')
+        dataIndex: 'Rank',
+        key: 'Rank',
+        render: (rank: number, recoder: ITopicModle) => (recoder.IsPassed ? <span>{rank}</span> : '--')
       },
       {
         title: '',
-        dataIndex: 'id',
-        key: 'id',
+        dataIndex: 'Id',
+        key: 'Id',
         render: (id: string) => (
           <Space size="middle">
             <Button type="ghost">
@@ -69,7 +78,7 @@ export class MainPage extends React.PureComponent {
         )
       }
     ];
-    return <Table style={{ width: '80%' }} columns={columns} dataSource={this.state.Topics} />;
+    return <Table style={{ width: '80%' }} columns={columns} dataSource={this.state.topics} loading={this.state.isBusy}/>;
   }
   render() {
     return (
