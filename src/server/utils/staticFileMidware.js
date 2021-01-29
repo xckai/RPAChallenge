@@ -61,6 +61,9 @@ async function staticFileMidware(ctx, next) {
     return;
   }
   let fullStaticPath = path.join(__dirname, '../../apps', url);
+  if (url == '/main') {
+    fullStaticPath = path.join(fullStaticPath, 'index.html');
+  }
   if (fullStaticPath.indexOf('/server/') >= 0) {
     ctx.res.writeHead(403);
     ctx.res.end();
@@ -68,7 +71,7 @@ async function staticFileMidware(ctx, next) {
   }
   let _mime = getFileMime(fullStaticPath);
   ctx.type = _mime;
-  logger.debug("staticFileMidware -- ", fullStaticPath);
+  logger.debug('staticFileMidware -- ', fullStaticPath);
   let content;
   if (useBinaryReader(_mime)) {
     content = getFileContent$(fullStaticPath, 'binary', logger);
@@ -93,5 +96,5 @@ async function staticFileMidware(ctx, next) {
   } else {
     ctx.body = content;
   }
-};
+}
 module.exports = staticFileMidware;

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Layout } from 'antd';
 import './App.less';
 import { Router, Route } from 'react-router';
 import { createBrowserHistory } from 'history';
