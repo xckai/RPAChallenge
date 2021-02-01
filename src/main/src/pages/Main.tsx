@@ -71,7 +71,7 @@ export class MainPage extends React.PureComponent {
         key: 'Id',
         render: (id: string) => (
           <Space size="middle">
-            <Button type="ghost" onClick={()=>{
+            <Button type="primary" onClick={()=>{
               window.location.href=`/main/topicdetail/${id}`;
             }}>
               <span >进入测试</span>

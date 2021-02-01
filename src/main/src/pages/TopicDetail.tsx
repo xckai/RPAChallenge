@@ -176,7 +176,7 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
         <Button style={{ float: 'right' }} type="primary" danger onClick={this.onSubmitBtn.bind(this)}>
           提交
         </Button>
-        <Button style={{ float: 'right', marginLeft: 10, marginRight: 10 }} type="ghost" onClick={this.onSwitchViewBtn.bind(this)}>
+        <Button style={{ float: 'right', marginLeft: 10, marginRight: 10 }} type="primary" onClick={this.onSwitchViewBtn.bind(this)}>
           切换视图
         </Button>
       </Footer>

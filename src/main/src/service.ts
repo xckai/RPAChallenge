@@ -11,49 +11,60 @@ const hostPrefix = `${window.location.protocol}//${window.location.host}`;
 const config = {
   authority: 'https://auth.bottime.com',
   client_id: 'encoo_RPAChallenge',
-  redirect_uri: `${hostPrefix}/main/index.html`,
+  redirect_uri: `${hostPrefix}/main/login_success`,
   response_type: 'code',
   scope: 'openid profile offline_access rpa_challenge',
-  post_logout_redirect_uri: `${hostPrefix}/main/logout`
+  post_logout_redirect_uri: `${hostPrefix}/main/login`
 };
 const oidcManager = new Oidc.UserManager(config);
+let token = '';
 (window as any).oidcManager = oidcManager;
 axios.interceptors.response.use(
   (resp) => resp,
   (err) => {
     if (err.response.status == 401) {
-      oidcManager.signinRedirect().then(()=>{
-        oidcManager.signinRedirectCallback(window.location.href).then(info=>{
-
-        })
-      })
+      window.location.href = '/main/login';
     }
     return err;
   }
 );
-
+axios.interceptors.request.use((config) => {
+  config.headers.common['Authorization'] = token;
+  return config;
+});
+export function doAuthCheck(cb: any) {
+  if (window.location.pathname.indexOf('/main/login') >=0 || window.location.pathname.indexOf('/main/login_success') >= 0) {
+    cb && cb();
+    return;
+  } else {
+    oidcManager.getUser().then((user) => {
+      if (!user) {
+        window.location.href = '/main/login';
+      } else {
+        token = `Bearer ${user.access_token}`;
+      }
+      cb && cb();
+    });
+  }
+}
 export function getUserInfo() {
-  return (window as any).currentUser ? Promise.resolve((window as any).currentUser) : oidcManager.getUser().then(function (user) {
-    if (user) {
-      (window as any).currentUser = user;
-      return Promise.resolve(user);
-    } else {
-      oidcManager.signinRedirect().then(()=>{
-        oidcManager.signinRedirectCallback(window.location.href).then(info=>{
-
-        })
-      })
-    }
+  return oidcManager.getUser();
+}
+export function login() {
+  return oidcManager.signinRedirect();
+}
+export function loginCb() {
+  return oidcManager.signinRedirectCallback().then((userInfo) => {
+    return userInfo;
   });
 }
-export function login(user: string, passwd: string) {
-  return axios.post<ICommonResp<string>>('/api/userlogin/login', {
-    account: user,
-    pass: passwd
-  });
+export function clearLoginInfo() {
+  oidcManager.clearStaleState();
+  oidcManager.removeUser();
+  return true;
 }
 export function logout() {
-  return oidcManager.signoutRedirect();
+  return oidcManager.signoutRedirect().then(clearLoginInfo)
 }
 /** 提交考试结果 */
 export function submit(postData: { appName: string; data: any; testId: string }) {

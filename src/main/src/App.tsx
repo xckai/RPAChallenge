@@ -5,6 +5,7 @@ import { createBrowserHistory } from 'history';
 import Login from './pages/Login';
 import { MainPage } from './pages/Main';
 import { TopicInfo } from './pages/TopicDetail';
+import LoginSuccess from './pages/LoginSuccess';
 const history = createBrowserHistory();
 class App extends React.Component<{}, { title: string }> {
   setTitle(title: string) {
@@ -18,6 +19,7 @@ class App extends React.Component<{}, { title: string }> {
          <Route path="/main" exact component={MainPage} />
         <Route path="/main/index.html" exact component={MainPage} />
         <Route path="/main/login" component={Login} />
+        <Route path="/main/login_success"  component={LoginSuccess} />
         <Route path="/main/topicdetail/:id" component={TopicInfo} />
       </Router>
     );

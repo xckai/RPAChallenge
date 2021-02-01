@@ -60,9 +60,7 @@ app.use(
 );
 
 app.on('error', (err, ctx) => {
-  logger.error('server error', err, ctx);
+  logger.error('server error',ctx.url, err);
 });
 
-if(cluster.isMaster){
-  logger.info(`Server start at : 0.0.0.0:${port}`);
-}
+logger.info(`Server start at : 0.0.0.0:${port}`);

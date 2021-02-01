@@ -10,7 +10,9 @@ function getFileContent$(fullStaticPath, type, logger) {
       //如果请求路径不存在，返回404
       return false;
     } else {
-      return fs.createReadStream(fullStaticPath, type);
+      return fs.createReadStream(fullStaticPath, {
+        encoding: type
+      });
     }
   } catch (err) {
     logger.error('getFileContent error', err, fullStaticPath, type);
@@ -50,51 +52,56 @@ function useBinaryReader(_mime) {
   return true;
 }
 async function staticFileMidware(ctx, next) {
-  const url = ctx.url;
-  if (/^\/services\//.test(url) || /^\/api\//.test(url) || url == '/submit') {
-    await next();
-    return;
-  }
-  const crtAppName = getAppName(url);
-  if (url == '' || url == '/') {
-    ctx.redirect('./' + crtAppName + '/index.html');
-    return;
-  }
-  let fullStaticPath = path.join(__dirname, '../../apps', url);
-  if (url == '/main') {
-    fullStaticPath = path.join(fullStaticPath, 'index.html');
-  }
-  if (fullStaticPath.indexOf('/server/') >= 0) {
-    ctx.res.writeHead(403);
-    ctx.res.end();
-    return;
-  }
-  let _mime = getFileMime(fullStaticPath);
-  ctx.type = _mime;
-  logger.debug('staticFileMidware -- ', fullStaticPath);
-  let content;
-  if (useBinaryReader(_mime)) {
-    content = getFileContent$(fullStaticPath, 'binary', logger);
-  } else {
-    content = getFileContent$(fullStaticPath, 'utf8', logger);
-  }
-  if (content == false) {
-    if (crtAppName == 'main') {
-      /** 处理前端路由 */
-      ctx.type = 'text/html';
-      fullStaticPath = path.join(__dirname, '../../apps', crtAppName, 'index.html');
-      if (useBinaryReader(_mime)) {
-        content = getFileContent$(fullStaticPath, 'binary', logger);
-      } else {
-        content = getFileContent$(fullStaticPath, 'utf8', logger);
-      }
-      ctx.body = content;
+  try {
+    const url = ctx.url;
+    if (/^\/services\//.test(url) || /^\/api\//.test(url) || url == '/submit') {
+      await next();
       return;
     }
-    ctx.res.writeHead(404);
-    ctx.body = 'Not Found';
-  } else {
-    ctx.body = content;
+    const crtAppName = getAppName(url);
+    if (url == '' || url == '/') {
+      ctx.redirect('./' + crtAppName + '/index.html');
+      return;
+    }
+    let fullStaticPath = path.join(__dirname, '../../apps', url);
+    if (url == '/main') {
+      fullStaticPath = path.join(fullStaticPath, 'index.html');
+    }
+    if (fullStaticPath.indexOf('/server/') >= 0) {
+      ctx.res.writeHead(403);
+      ctx.res.end();
+      return;
+    }
+    let _mime = getFileMime(fullStaticPath);
+    ctx.type = _mime;
+    logger.debug('staticFileMidware -- ', fullStaticPath);
+    let content;
+    if (useBinaryReader(_mime)) {
+      content = getFileContent$(fullStaticPath, undefined, logger);
+    } else {
+      content = getFileContent$(fullStaticPath, 'utf8', logger);
+    }
+    if (content == false) {
+      if (crtAppName == 'main') {
+        /** 处理前端路由 */
+        ctx.type = 'text/html';
+        fullStaticPath = path.join(__dirname, '../../apps', crtAppName, 'index.html');
+        if (useBinaryReader(_mime)) {
+          content = getFileContent$(fullStaticPath, undefined, logger);
+        } else {
+          content = getFileContent$(fullStaticPath, 'utf8', logger);
+        }
+        ctx.body = content;
+        return;
+      }
+      ctx.res.writeHead(404);
+      ctx.body = 'Not Found';
+    } else {
+      ctx.body = content;
+    }
+  } catch (e) {
+    logger.error('staticFileMidware error', ctx.url, e.message, e.stack);
+    ctx.res.writeHead(500);
   }
 }
 module.exports = staticFileMidware;
