@@ -1,0 +1,114 @@
+<html>
+
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+    integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+</head>
+
+<body>
+  <div style="height: 100%;" class="container-md p-2 d-flex flex-row justify-content-center align-items-center">
+    <div id="container" style="width: 400px; display: none;" class="d-flex flex-column p-4 bg-white">
+      <h5 id="info">正在录入第<span style="color: red">1</span>条信息</h5>
+      <form>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">姓名</label>
+          <input id="name" , type="text" class="form-control col-sm-8">
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">电话</label>
+          <input id="tel" type="tel" class="form-control col-sm-8">
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">性别</label>
+          <select id="gender" class="form-control col-sm-8">
+            <option value="male">男 </option>
+            <option value="female">女 </option>
+          </select>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">出生日期</label>
+          <input id="birthday" class="form-control col-sm-8" type="date" required><br>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">住址</label>
+          <textarea id="address" class="form-control col-sm-8" type="text" rows="3"></textarea>
+        </div>
+      </form>
+      <div id="btn-group" class="d-flex justify-content-around">
+        <button class="btn btn-primary" onclick="nextPerson()">录入下一位</button>
+        <button class="btn btn-success" onclick="save()">结束</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script src="./getExamResult.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+  integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+<script>
+  var keyMap = {
+    "name": "name",
+    "tel": "tel",
+    "gender": "gender",
+    "birthday": "birthday",
+    "address": "address"
+  }
+  var formData = [];
+  var crtForm;
+  tempFormElement = $("#container form").get(0).cloneNode(true);
+  $("#container form").remove();
+  function getNextFormElement() {
+    var f = $(tempFormElement.cloneNode(true));
+    f.css("display", "block")
+    Object.entries(keyMap).forEach(function (entry) {
+      var key = entry[0];
+      var value = randomNameGen();
+      f.find("#" + key).attr("id", value);
+      keyMap[key] = value;
+      f.find(".form-group").eq(Math.floor(5 * Math.random())).before($('<div class="form-group row" style="display:none"> <label class="col-sm-4 col-form-label">无</label><input type="text" class="form-control col-sm-8"></div>'));
+    })
+
+    return f;
+  }
+  function getCrtFormData() {
+    var formData = {};
+    Object.entries(keyMap).forEach(function (entry) {
+      var originkey = entry[0];
+      var randomKey = entry[1];
+      formData[originkey] = $(crtForm).find("#" + randomKey).val();
+    })
+    return formData;
+  }
+  function randomNameGen() {
+    return "component_" + Math.floor(Math.random() * 10000)
+  }
+  window.onload = function () {
+    $("#container").css("display", "block")
+    crtForm = getNextFormElement();
+    $("#btn-group").before(crtForm);
+  }
+  function nextPerson() {
+    var data = getCrtFormData();
+    formData.push(data);
+    $("#container form").css("display", "none")
+    crtForm = getNextFormElement();
+    $("#btn-group").before(crtForm);
+    $("#info").find("span").text(formData.length + 1);
+    console.log(formData)
+  }
+  function save() {
+    var data = getCrtFormData();
+    formData.push(data);
+    $("#container form").css("display", "none")
+    crtForm = getNextFormElement();
+    $("#btn-group").before(crtForm);
+    console.log(formData)
+    $("button").prop("disabled", true)
+    $("#info").text("所有数据完成，共计" + formData.length + "条");
+  }
+
+</script>
+
+</html>
