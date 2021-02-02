@@ -25,19 +25,29 @@
     background-size: cover;
     position: relative;
   }
-.bg::before{
-  content: "";
+  .bg::before {
+    content: '';
     position: absolute;
     top: 0px;
     right: 0px;
     bottom: 0px;
     left: 0px;
-    background-color: rgba(0,0,0,0.3);
-}
+    background-color: rgba(0, 0, 0, 0.3);
+  }
   .logo-login {
     background: url(./images/logo-1.png);
     background-size: contain;
     background-repeat: no-repeat;
+  }
+  .full-screen {
+    height: 100%;
+    width: 100%;
+    .ant-spin-container {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
   }
 }
 .ant-btn-ghost {

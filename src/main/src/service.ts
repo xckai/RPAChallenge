@@ -55,6 +55,9 @@ export function login() {
 }
 export function loginCb() {
   return oidcManager.signinRedirectCallback().then((userInfo) => {
+    if(userInfo.access_token){
+      token = `Bearer ${userInfo.access_token}`;
+    }
     return userInfo;
   });
 }

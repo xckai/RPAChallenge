@@ -60,6 +60,15 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
         message.error(`读取当前测试信息错误，请退出后重试！(${err.message})`);
       });
   }
+  getTopicIndexPageURL(url: string = '') {
+    if (url.indexOf('index.html') == -1) {
+      return url + '/index.html';
+    }
+    return url;
+  }
+  getIntroductionPageURL() {
+    return this.state.topicDetail?.Name ? `/${this.state.topicDetail.Name}/introduction.html` : '';
+  }
   onBeginTestBtn() {
     challengeStart(this.state.topicDetail.Id ?? '')
       .then(() => {
@@ -133,7 +142,7 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
     return (
       <>
         <Content style={{ position: 'relative' }}>
-          <iframe src={this.state.topicDetail.URL} height="100%" width="100%" ref={this.frameRef}></iframe>
+          <iframe src={this.getTopicIndexPageURL(this.state.topicDetail.URL)} height="100%" width="100%" ref={this.frameRef}></iframe>
           <div
             style={{
               position: 'absolute',
@@ -145,12 +154,13 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
               background: '#fff'
             }}
           >
-            <PageHeader title={this.state.topicDetail?.Title + (this.state.topicDetail.Id ?? '')} />
+            <iframe src={this.getIntroductionPageURL()} height="100%" width="100%"></iframe>
+            {/* <PageHeader title={this.state.topicDetail?.Title + (this.state.topicDetail.Id ?? '')} />
             <Divider style={{ margin: '0 0 10px 0' }} />
             <div
               style={{ padding: '0 10px 20px 10px' }}
               dangerouslySetInnerHTML={{ __html: this.state.topicDetail.IntroductionHTMLStr || '' }}
-            ></div>
+            ></div> */}
           </div>
         </Content>
       </>
@@ -158,16 +168,21 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
   }
   renderDetailPage() {
     return (
-      <>
-        <Content>
-          <PageHeader title={this.state.topicDetail?.Title} />
-          <Divider style={{ margin: '0 0 10px 0' }} />
-          <div
-            style={{ padding: '0 10px 20px 10px' }}
-            dangerouslySetInnerHTML={{ __html: this.state.topicDetail.IntroductionHTMLStr || '' }}
-          ></div>
-        </Content>
-      </>
+      <Content style={{ position: 'relative' }}>
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            visibility: !this.state.showDetail ? 'hidden' : 'initial',
+            background: '#fff'
+          }}
+        >
+          <iframe src={this.getIntroductionPageURL()} height="100%" width="100%"></iframe>
+        </div>
+      </Content>
     );
   }
   renderFooder() {
@@ -191,10 +206,11 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
   render() {
     return (
       <Layout style={{ height: '100%', width: '100%', background: 'rgb(255,255,255)' }}>
-        <Bar title={this.state.isTestBegin && !this.state.showDetail ? this.state.topicDetail.Title ?? '' : '详情'} />
-        {this.state.isBusy && <Spin tip="加载中..." />}
-        {this.state.isTestBegin ? this.renderTestPage() : this.renderDetailPage()}
-        {this.renderFooder()}
+        <Bar title={this.state.topicDetail.Title??"详情页"}/>
+        <Spin tip="正在读取详情信息..." spinning={this.state.isBusy} wrapperClassName="full-screen">
+          {this.state.isTestBegin ? this.renderTestPage() : this.renderDetailPage()}
+          {this.renderFooder()}
+        </Spin>
       </Layout>
     );
   }
