@@ -3,12 +3,14 @@ import { message, Spin } from 'antd';
 import Bar from '../components/Bar';
 import Layout, { Content } from 'antd/lib/layout/layout';
 import { loginCb } from '../service';
+import { useHistory  } from 'react-router-dom';
 
 export default function LoginSuccess() {
+  const history = useHistory();
   useEffect(() => {
     loginCb()
       .then((user) => {
-        window.location.href = '/main/index.html';
+        history.push('/main/index.html')
       })
       .catch((err) => message.error(err.message));
   });

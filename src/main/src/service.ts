@@ -16,9 +16,13 @@ const config = {
   scope: 'openid profile offline_access rpa_challenge',
   post_logout_redirect_uri: `${hostPrefix}/main/login`
 };
-const oidcManager = new Oidc.UserManager(config);
+let oidcManager: Oidc.UserManager;
+if ((window as any).oidcManage) {
+  oidcManager = (window as any).oidcManage;
+} else {
+  oidcManager = new Oidc.UserManager(config);
+}
 let token = '';
-(window as any).oidcManager = oidcManager;
 axios.interceptors.response.use(
   (resp) => resp,
   (err) => {
@@ -33,7 +37,7 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 export function doAuthCheck(cb: any) {
-  if (window.location.pathname.indexOf('/main/login') >=0 || window.location.pathname.indexOf('/main/login_success') >= 0) {
+  if (window.location.pathname.indexOf('/main/login') >= 0 || window.location.pathname.indexOf('/main/login_success') >= 0) {
     cb && cb();
     return;
   } else {
@@ -55,7 +59,7 @@ export function login() {
 }
 export function loginCb() {
   return oidcManager.signinRedirectCallback().then((userInfo) => {
-    if(userInfo.access_token){
+    if (userInfo.access_token) {
       token = `Bearer ${userInfo.access_token}`;
     }
     return userInfo;
@@ -67,7 +71,7 @@ export function clearLoginInfo() {
   return true;
 }
 export function logout() {
-  return oidcManager.signoutRedirect().then(clearLoginInfo)
+  return oidcManager.signoutRedirect().then(clearLoginInfo);
 }
 /** 提交考试结果 */
 export function submit(postData: { appName: string; data: any; testId: string }) {

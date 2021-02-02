@@ -3,7 +3,7 @@ const gulp = require('gulp');
 const clean = require('gulp-clean');
 const path = require('path');
 gulp.task('clean', () => {
-  return gulp.src(path.resolve(__dirname, './release/**/*.*'),{read: false}).pipe(clean({ force: true }));
+  return gulp.src(path.resolve(__dirname, './release/**/*.*'), { read: false }).pipe(clean({ force: true }));
 });
 gulp.task('copy:main', () => {
   return gulp.src(path.resolve(__dirname, './src/main/build/**/*.*')).pipe(gulp.dest('./release/apps/main'));
@@ -14,7 +14,10 @@ gulp.task('copy:server', () => {
 gulp.task('copy:apps', () => {
   return gulp.src(path.resolve(__dirname, './apps/**/*.*')).pipe(gulp.dest('./release/apps'));
 });
-gulp.task('build', gulp.series('clean', 'copy:server', 'copy:apps', 'copy:main'));
+gulp.task('copy:script', () => {
+  return gulp.src(path.resolve(__dirname, './src/*.cmd')).pipe(gulp.dest('./release'));
+});
+gulp.task('build', gulp.series('clean', 'copy:server', 'copy:apps', 'copy:main', 'copy:script'));
 Date.prototype.Format = function (fmt) {
   var o = {
     'M+': this.getMonth() + 1, //月份

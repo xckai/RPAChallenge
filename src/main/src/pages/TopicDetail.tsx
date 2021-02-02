@@ -2,7 +2,7 @@ import { Button, Divider, Layout, PageHeader, Modal, message } from 'antd';
 import React, { PureComponent } from 'react';
 import Bar from '../components/Bar';
 import { Content, Footer } from 'antd/lib/layout/layout';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ExclamationCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { challengeStart, getDetail, submit } from '../service';
 import { Spin } from 'antd';
 
@@ -120,7 +120,18 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
                           (window.location as any).href = '/main/index.html';
                         }
                       })
-                    : message.error(res.data.result ?? '未通过校验，请检查修改后重新提交！');
+                    : Modal.confirm({
+                        icon: <CloseCircleOutlined />,
+                        title: '未通过测试',
+                        content: <p>{res.data.result ?? '未通过校验，请检查修改后重新提交！'}</p>,
+                        okText: '重新开始',
+                        cancelText: '返回修改',
+                        onOk: () =>
+                          this.setState({
+                            isTestBegin: false,
+                            showDetail: true
+                          })
+                      });
                 })
                 .catch((err) => {
                   console && console.error(err);
@@ -206,7 +217,7 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
   render() {
     return (
       <Layout style={{ height: '100%', width: '100%', background: 'rgb(255,255,255)' }}>
-        <Bar title={this.state.topicDetail.Title??"详情页"}/>
+        <Bar title={this.state.topicDetail.Title ?? '详情页'} />
         <Spin tip="正在读取详情信息..." spinning={this.state.isBusy} wrapperClassName="full-screen">
           {this.state.isTestBegin ? this.renderTestPage() : this.renderDetailPage()}
           {this.renderFooder()}

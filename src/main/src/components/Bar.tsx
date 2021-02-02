@@ -24,8 +24,9 @@ export default class Bar extends PureComponent<{ title: string }> {
   render() {
     return (
       <Header className="header" title="RPA Challenge">
-        <div>
-          <strong>RPA Challenge</strong>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className="icon_logo"></div>
+          <strong style={{ marginLeft: 10 }}>RPA Challenge</strong>
         </div>
         <div className="mid-title">{this.props?.title}</div>
         <div className="user-info">

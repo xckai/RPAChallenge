@@ -3,6 +3,7 @@ import React from 'react';
 import Bar from '../components/Bar';
 import { Button, message, Space, Table, Tag } from 'antd';
 import { getUserExamList } from '../service';
+import { Link } from 'react-router-dom';
 
 interface ITopicModle {
   /** 测试id */
@@ -21,18 +22,22 @@ interface ITopicModle {
 export class MainPage extends React.PureComponent {
   state: {
     topics: Array<ITopicModle>;
-    isBusy:boolean
+    isBusy: boolean;
   } = {
     topics: [],
     isBusy: true
   };
-  componentDidMount(){
-    getUserExamList().then(resp=>this.setState({
-      topics: resp.data?.response?.data??[],
-      isBusy: false
-    })).catch((err:any)=>{
-      message.error(`获取列表失败，请稍后刷新重试! (${err.message})`);
-    })
+  componentDidMount() {
+    getUserExamList()
+      .then((resp) =>
+        this.setState({
+          topics: resp.data?.response?.data ?? [],
+          isBusy: false
+        })
+      )
+      .catch((err: any) => {
+        message.error(`获取列表失败，请稍后刷新重试! (${err.message})`);
+      });
   }
   renderList() {
     const columns = [
@@ -57,7 +62,7 @@ export class MainPage extends React.PureComponent {
         title: '耗时',
         dataIndex: 'TimeCost',
         key: 'TimeCost',
-        render: (timeCost: number, recoder: ITopicModle) => (recoder.IsPassed  ? <span>{(recoder.TimeCost??0) / 1000}s</span> : '--')
+        render: (timeCost: number, recoder: ITopicModle) => (recoder.IsPassed ? <span>{(recoder.TimeCost ?? 0) / 1000}s</span> : '--')
       },
       {
         title: '排名',
@@ -71,16 +76,16 @@ export class MainPage extends React.PureComponent {
         key: 'Id',
         render: (id: string) => (
           <Space size="middle">
-            <Button type="primary" onClick={()=>{
-              window.location.href=`/main/topicdetail/${id}`;
-            }}>
-              <span >进入测试</span>
-            </Button>
+            <Link to={`/main/topicdetail/${id}`}>
+              <Button type="primary">
+                <span>进入测试</span>
+              </Button>
+            </Link>
           </Space>
         )
       }
     ];
-    return <Table style={{ width: '80%' }} columns={columns} dataSource={this.state.topics} loading={this.state.isBusy}/>;
+    return <Table style={{ width: '80%' }} columns={columns} dataSource={this.state.topics} loading={this.state.isBusy} />;
   }
   render() {
     return (
