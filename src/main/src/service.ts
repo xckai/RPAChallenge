@@ -14,7 +14,9 @@ const config = {
   redirect_uri: `${hostPrefix}/main/login_success`,
   response_type: 'code',
   scope: 'openid profile offline_access rpa_challenge',
-  post_logout_redirect_uri: `${hostPrefix}/main/login`
+  post_logout_redirect_uri: `${hostPrefix}/main/login`,
+  checkSessionInterval: 60000 * 60,
+  userStore: new Oidc.WebStorageStateStore({ store: window.localStorage })
 };
 let oidcManager: Oidc.UserManager;
 if ((window as any).oidcManage) {
@@ -22,7 +24,9 @@ if ((window as any).oidcManage) {
 } else {
   oidcManager = new Oidc.UserManager(config);
 }
+Oidc.Log.logger = console;
 let token = '';
+let crtUserInfo: Oidc.User;
 axios.interceptors.response.use(
   (resp) => resp,
   (err) => {
@@ -45,6 +49,7 @@ export function doAuthCheck(cb: any) {
       if (!user) {
         window.location.href = '/main/login';
       } else {
+        crtUserInfo = user;
         token = `Bearer ${user.access_token}`;
       }
       cb && cb();
@@ -52,7 +57,7 @@ export function doAuthCheck(cb: any) {
   }
 }
 export function getUserInfo() {
-  return oidcManager.getUser();
+  return Promise.resolve(crtUserInfo);
 }
 export function login() {
   return oidcManager.signinRedirect();
@@ -60,6 +65,7 @@ export function login() {
 export function loginCb() {
   return oidcManager.signinRedirectCallback().then((userInfo) => {
     if (userInfo.access_token) {
+      crtUserInfo = userInfo;
       token = `Bearer ${userInfo.access_token}`;
     }
     return userInfo;

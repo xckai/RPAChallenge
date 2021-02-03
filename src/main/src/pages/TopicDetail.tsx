@@ -46,15 +46,20 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
     this.setState({ id });
     getDetail(id)
       .then((resp) => {
-        let topicDetail = resp.data.response;
-        let name = topicDetail.URL.split('/')[1];
-        this.setState({
-          topicDetail: {
-            ...topicDetail,
-            Name: name
-          },
-          isBusy: false
-        });
+        if(resp.data?.success) {
+          let topicDetail = resp.data.response;
+          let name = topicDetail.URL.split('/')[1];
+          this.setState({
+            topicDetail: {
+              ...topicDetail,
+              Name: name
+            },
+            isBusy: false
+          });
+        }else{
+          message.error(`获取列表失败，请稍后刷新重试! (${resp.data})`);
+        }
+
       })
       .catch((err: any) => {
         message.error(`读取当前测试信息错误，请退出后重试！(${err.message})`);

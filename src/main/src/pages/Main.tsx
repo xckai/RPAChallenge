@@ -29,13 +29,20 @@ export class MainPage extends React.PureComponent {
   };
   componentDidMount() {
     getUserExamList()
-      .then((resp) =>
-        this.setState({
-          topics: resp.data?.response?.data ?? [],
-          isBusy: false
-        })
-      )
+      .then((resp) => {
+        if(resp.data?.success) {
+          this.setState({
+            topics: resp.data?.response?.data ?? [],
+            isBusy: false
+          });
+        }else{
+          console.error(message)
+          message.error(`获取列表失败，请稍后刷新重试! (${resp.data})`);
+        }
+
+      })
       .catch((err: any) => {
+        console.error(err,"err")
         message.error(`获取列表失败，请稍后刷新重试! (${err.message})`);
       });
   }
@@ -59,7 +66,7 @@ export class MainPage extends React.PureComponent {
         render: (passed: boolean) => (passed ? <Tag color="green">已通过</Tag> : <Tag color="red">未通过</Tag>)
       },
       {
-        title: '耗时',
+        title: '最佳成绩',
         dataIndex: 'TimeCost',
         key: 'TimeCost',
         render: (timeCost: number, recoder: ITopicModle) => (recoder.IsPassed ? <span>{(recoder.TimeCost ?? 0) / 1000}s</span> : '--')

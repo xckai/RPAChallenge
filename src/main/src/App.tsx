@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.less';
-import { Router, Route } from 'react-router-dom';
+import { Router, Route} from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import Login from './pages/Login';
 import { MainPage } from './pages/Main';
