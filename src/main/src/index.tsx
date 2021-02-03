@@ -4,10 +4,14 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { doAuthCheck } from './service';
+import { BrowserRouter } from 'react-router-dom';
+
 doAuthCheck(() => {
   ReactDOM.render(
     <React.StrictMode>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </React.StrictMode>,
     document.getElementById('root')
   );

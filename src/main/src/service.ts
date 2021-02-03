@@ -13,17 +13,13 @@ const config = {
   client_id: 'encoo_RPAChallenge',
   redirect_uri: `${hostPrefix}/main/login_success`,
   response_type: 'code',
+  response_mode: 'query',
   scope: 'openid profile offline_access rpa_challenge',
   post_logout_redirect_uri: `${hostPrefix}/main/login`,
   checkSessionInterval: 60000 * 60,
   userStore: new Oidc.WebStorageStateStore({ store: window.localStorage })
 };
-let oidcManager: Oidc.UserManager;
-if ((window as any).oidcManage) {
-  oidcManager = (window as any).oidcManage;
-} else {
-  oidcManager = new Oidc.UserManager(config);
-}
+
 // Oidc.Log.logger = console;
 let token = '';
 let crtUserInfo: Oidc.User;
@@ -45,39 +41,52 @@ export function doAuthCheck(cb: any) {
     cb && cb();
     return;
   } else {
-    oidcManager.getUser().then((user) => {
-      if (!user) {
-        window.location.href = '/main/login';
-      } else {
-        crtUserInfo = user;
-        token = `Bearer ${user.access_token}`;
-      }
-      cb && cb();
-    });
+    new Oidc.UserManager({
+      authority: 'https://auth.bottime.com',
+      client_id: 'encoo_RPAChallenge',
+      response_mode: 'query',
+      scope: 'openid profile offline_access rpa_challenge',
+      userStore: new Oidc.WebStorageStateStore({
+        store: window.localStorage
+      })
+    })
+      .getUser()
+      .then((user) => {
+        if (!user) {
+          window.location.href = '/main/login';
+        } else {
+          crtUserInfo = user;
+          token = `Bearer ${user.access_token}`;
+        }
+        cb && cb();
+      });
   }
 }
 export function getUserInfo() {
   return Promise.resolve(crtUserInfo);
 }
 export function login() {
-  return oidcManager.signinRedirect();
+  return new Oidc.UserManager(config).signinRedirect();
 }
 export function loginCb() {
-  return oidcManager.signinRedirectCallback().then((userInfo) => {
-    if (userInfo.access_token) {
-      crtUserInfo = userInfo;
-      token = `Bearer ${userInfo.access_token}`;
-    }
-    return userInfo;
-  });
-}
-export function clearLoginInfo() {
-  oidcManager.clearStaleState();
-  oidcManager.removeUser();
-  return true;
+  return new Oidc.UserManager({
+    response_mode: 'query',
+    scope: 'openid profile offline_access rpa_challenge',
+    userStore: new Oidc.WebStorageStateStore({
+      store: window.localStorage
+    })
+  })
+    .signinRedirectCallback()
+    .then((userInfo) => {
+      if (userInfo.access_token) {
+        crtUserInfo = userInfo;
+        token = `Bearer ${userInfo.access_token}`;
+      }
+      return userInfo;
+    });
 }
 export function logout() {
-  return oidcManager.signoutRedirect().then(clearLoginInfo);
+  return new Oidc.UserManager(config).signoutRedirect();
 }
 /** 提交考试结果 */
 export function submit(postData: { appName: string; data: any; testId: string }) {

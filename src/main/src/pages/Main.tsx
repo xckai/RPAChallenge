@@ -4,7 +4,9 @@ import Bar from '../components/Bar';
 import { Button, message, Space, Table, Tag } from 'antd';
 import { getUserExamList } from '../service';
 import { Link } from 'react-router-dom';
-
+interface IProps {
+  history: any;
+}
 interface ITopicModle {
   /** 测试id */
   Id: string;
@@ -19,7 +21,7 @@ interface ITopicModle {
   /** 耗时排名 */
   Rank?: number;
 }
-export class MainPage extends React.PureComponent {
+export class MainPage extends React.PureComponent<Partial<IProps>> {
   state: {
     topics: Array<ITopicModle>;
     isBusy: boolean;
@@ -36,12 +38,12 @@ export class MainPage extends React.PureComponent {
             isBusy: false
           });
         }else{
-          message.error(`获取列表失败，请稍后刷新重试! (${resp.data.msg})`);
+          message.error(`获取列表失败，请稍后刷新重试! (${resp.status}, ${resp.data?.msg})`);
         }
 
       })
       .catch((err: any) => {
-        message.error(`获取列表失败，请稍后刷新重试! (${err.response.data})`);
+        message.error(`获取列表失败，请稍后刷新重试! (${err.response?.data})`);
       });
   }
   renderList() {

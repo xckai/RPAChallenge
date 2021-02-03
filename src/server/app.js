@@ -16,9 +16,9 @@ app.use(async (ctx, next) => {
   try {
     await next();
   } catch (err) {
-    ctx.status = err.status || 500;
+    ctx.status = err.status || 501;
     ctx.body = err.message;
-    logger.error('Commom error: ', ctx.url, " Message: ", err.message, err.stack);
+    logger.error('Commom error: ', ctx.url, ' Message: ', err.message, err.stack);
   }
 });
 app.use(staticFileMidware);
@@ -28,16 +28,20 @@ const proxyMidware = createProxyMiddleware({
   logLevel: config.logLevel,
   logProvider: function logProvider(provider) {
     return logger;
-  },
-  onError(err, req, res) {
-    res.writeHead(500, {
-      'Content-Type': 'text/plain'
-    });
-    res.end('remote server error: ' + err);
-    logger.error('proxy error:', req.url, err.message);
   }
 });
-app.use(route.all('/api/**/*', k2c(proxyMidware)));
+app.use(
+  route.all('/api/**/*', async (ctx, next) => {
+    try {
+      await k2c(proxyMidware)(ctx, next);
+      if (ctx.res.statusCode != 200) {
+        logger.error('Proxy to remote got error: ', ctx.res.statusCode, ctx.res.body);
+      }
+    } catch (e) {
+      logger.error('proxy got Error', e.message);
+    }
+  })
+);
 app.use(koaBody());
 app.use(
   route.post('/submit', async (ctx, name) => {

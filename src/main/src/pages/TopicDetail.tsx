@@ -10,6 +10,7 @@ interface IProps {
   match: {
     params: { id: string };
   };
+  history: any;
 }
 interface IState {
   isTestBegin: boolean;
@@ -46,7 +47,7 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
     this.setState({ id });
     getDetail(id)
       .then((resp) => {
-        if(resp.data?.success) {
+        if (resp.data?.success) {
           let topicDetail = resp.data.response;
           let name = topicDetail.URL.split('/')[1];
           this.setState({
@@ -56,10 +57,9 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
             },
             isBusy: false
           });
-        }else{
-          message.error(`获取列表失败，请稍后刷新重试! (${resp.data.msg})`);
+        } else {
+          message.error(`获取列表失败，请稍后刷新重试! (${resp.data?.msg})`);
         }
-
       })
       .catch((err: any) => {
         message.error(`读取当前测试信息错误，请退出后重试！(${err.message || err.response.data})`);
@@ -121,8 +121,8 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
                             </div>
                           </div>
                         ),
-                        onOk() {
-                          (window.location as any).href = '/main/index.html';
+                        onOk: () => {
+                          this.props.history?.push('/main/index.html');
                         }
                       })
                     : Modal.confirm({

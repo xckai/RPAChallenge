@@ -2,12 +2,9 @@ import React, { useEffect } from 'react';
 import { Button, message } from 'antd';
 import Bar from '../components/Bar';
 import Layout, { Content } from 'antd/lib/layout/layout';
-import { clearLoginInfo, login } from '../service';
+import { login } from '../service';
 import { LoginOutlined } from '@ant-design/icons';
 export default function Login() {
-  useEffect(()=>{
-    clearLoginInfo()
-  },[""])
   return (
     <Layout style={{ height: '100%', background: 'rgb(255,255,255)' }}>
       <Bar title="" />

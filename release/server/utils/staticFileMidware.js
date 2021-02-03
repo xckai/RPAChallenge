@@ -58,6 +58,10 @@ function getFileURIByURL(url, appName) {
 
 async function staticFileMidware(ctx, next) {
   const url = ctx.url;
+  if (url == '' || url == '/') {
+    ctx.redirect('./' + mainAppName + '/index.html');
+    return;
+  }
   logger.debug('Url: ', url);
   if (/^\/services\//.test(url) || /^\/api\//.test(url) || url == '/submit') {
     await next();
@@ -97,8 +101,8 @@ async function staticFileMidware(ctx, next) {
   const ifModifiedSince = 'If-Modified-Since'.toLowerCase();
   if (ctx.req.headers[ifModifiedSince] && lastModified == ctx.req.headers[ifModifiedSince]) {
     logger.debug('Not modified: ', url);
-    res.writeHead(304, 'Not Modified');
-    res.end();
+    ctx.res.writeHead(304, 'Not Modified');
+    ctx.res.end();
   } else {
     ctx.res.setHeader('Content-Length', fileStat.size);
     ctx.res.setHeader('Last-Modified', lastModified);
