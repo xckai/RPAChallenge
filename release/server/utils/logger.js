@@ -1,7 +1,6 @@
 const simpleNodeLogger = require('simple-node-logger');
 const config = require('../config.json');
 const opts = {
-  errorEventName: 'error',
   logDirectory: './logs',
   fileNamePattern: 'server-<DATE>.log',
   dateFormat: 'YYYY.MM.DD'

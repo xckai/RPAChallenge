@@ -10,23 +10,38 @@ const axios = require('axios').default;
 const app = new Koa();
 const port = config.port;
 const logger = require('./utils/logger');
-const cluster = require('cluster');
 
 app.listen(port, '0.0.0.0');
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err) {
+    ctx.status = err.status || 500;
+    ctx.body = err.message;
+    logger.error('Commom error: ', ctx.url, " Message: ", err.message, err.stack);
+  }
+});
 app.use(staticFileMidware);
 const proxyMidware = createProxyMiddleware({
   target: config.remoteServerURL,
   changeOrigin: true,
   logLevel: config.logLevel,
-  logProvider:function logProvider(provider) {
+  logProvider: function logProvider(provider) {
     return logger;
+  },
+  onError(err, req, res) {
+    res.writeHead(500, {
+      'Content-Type': 'text/plain'
+    });
+    res.end('remote server error: ' + err);
+    logger.error('proxy error:', req.url, err.message);
   }
 });
 app.use(route.all('/api/**/*', k2c(proxyMidware)));
 app.use(koaBody());
 app.use(
   route.post('/submit', async (ctx, name) => {
-    logger.debug("/submit","resq body receive: " ,ctx.request.body);
+    logger.debug('/submit', 'resq body receive: ', ctx.request.body);
     const res = await invokeValidator(ctx.request.body);
     if (res.error) {
       ctx.res.writeHead(500);
@@ -38,13 +53,13 @@ app.use(
           method: 'POST',
           headers: ctx.headers,
           data: { testId: ctx.request.body.testId, isPass: true },
-          url: config.remoteServerURL + 'api/rpachallenge/submitchallenge?'+ `testId=${ctx.request.body.testId}&isPass=true`
+          url: config.remoteServerURL + 'api/rpachallenge/submitchallenge?' + `testId=${ctx.request.body.testId}&isPass=true`
         };
         try {
           var resp = await axios(options);
           body.timeout = resp.data.response;
           ctx.body = body;
-          logger.debug("/submit", "remote return: ",body);
+          logger.debug('/submit', 'remote return: ', body);
         } catch (e) {
           logger.error(e);
           body.isPassed = false;
@@ -60,7 +75,7 @@ app.use(
 );
 
 app.on('error', (err, ctx) => {
-  logger.error('server error',ctx.url, err);
+  logger.error('Fatal server error', ctx.url, err);
 });
 
 logger.info(`Server start at : 0.0.0.0:${port}`);

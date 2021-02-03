@@ -1,107 +1,113 @@
 const path = require('path');
 const getFileMime = require('./mimes');
 const fs = require('fs');
+const createError = require('http-errors');
+const util = require('util');
 const logger = require('./logger');
+const appsDirPath = path.join(__dirname, '../../apps');
+const mainAppName = 'main';
+const maxCatchAge = 60 * 60 * 24 * 30;
+const access = util.promisify(fs.access);
+const stat = util.promisify(fs.stat);
 
-function getFileContent$(fullStaticPath, type, logger) {
+async function isExists(path) {
   try {
-    let exist = fs.existsSync(fullStaticPath);
-    if (!exist) {
-      //如果请求路径不存在，返回404
-      return false;
-    } else {
-      return fs.createReadStream(fullStaticPath, {
-        encoding: type
-      });
-    }
-  } catch (err) {
-    logger.error('getFileContent error', err, fullStaticPath, type);
+    await access(path);
+    return true;
+  } catch (e) {
     return false;
   }
 }
 function getAppName(url) {
-  const appName = 'main';
+  const appName = mainAppName;
   if (url == '' || url == '/') {
     return appName;
   }
-  let firstParam = url.split('/')[0];
-  if (/^\/\w+$/.test(url)) {
+  let firstParam = url.split('/')[1];
+  if (/^\/\w+\/?/.test(url)) {
     return firstParam;
   }
   return appName;
 }
-function isRootResourcePath(url) {
-  return /^\/\w+\.\w+$/.test(url);
+
+function decodeURL(url) {
+  try {
+    const resUrl = decodeURIComponent(url);
+    return resUrl.split('?')[0];
+  } catch (err) {
+    throw new Error('decodeURL error: ' + url);
+  }
 }
-function useBinaryReader(_mime) {
-  // 如果是图片/其他资源，则用node原生res，输出二进制数据
-  if (_mime) {
-    if (_mime.indexOf('/json') >= 0) {
-      return false;
+function getFileURIByURL(url, appName) {
+  try {
+    let crtUrl = decodeURL(url);
+    crtUrl = crtUrl.trim();
+    let fileLocation = appsDirPath;
+    if (crtUrl == '' || crtUrl == '/' || /^\/\w+$/.test(crtUrl)) {
+      return path.join(fileLocation, './' + appName, './index.html');
     }
-    if (_mime.indexOf('/html') >= 0) {
-      return false;
-    }
-    if (_mime.indexOf('/javascript') >= 0) {
-      return false;
-    }
-    if (_mime.indexOf('/css') >= 0) {
-      return false;
+    crtUrl = crtUrl.split('?')[0];
+    crtUrl = crtUrl.replace(/(\.\/)?/g, '').replace(/(\.\.\/)?/g, '');
+    crtUrl = path.join(fileLocation, crtUrl);
+    return crtUrl;
+  } catch (e) {
+    logger.debug('getFileURIByURL error: ', e.message);
+    throw createError(400, 'Invalid URL');
+  }
+}
+
+async function staticFileMidware(ctx, next) {
+  const url = ctx.url;
+  logger.debug('Url: ', url);
+  if (/^\/services\//.test(url) || /^\/api\//.test(url) || url == '/submit') {
+    await next();
+    return;
+  }
+  if (ctx.method !== 'HEAD' && ctx.method !== 'GET') {
+    throw createError(403, 'Invalid Method: ' + ctx.method);
+  }
+  const crtAppName = getAppName(url);
+  logger.debug('Current app: ', crtAppName);
+  let fullStaticPath = getFileURIByURL(url, crtAppName);
+  let exist = await isExists(fullStaticPath);
+  if (!exist) {
+    logger.debug('File not exist: ', fullStaticPath);
+    if (crtAppName == mainAppName) {
+      fullStaticPath = getFileURIByURL('/', mainAppName);
+    } else {
+      throw createError(404);
     }
   }
-  return true;
-}
-async function staticFileMidware(ctx, next) {
+  let _mime = getFileMime(fullStaticPath);
+  ctx.type = _mime;
+  logger.debug('File info: ', fullStaticPath, ' mime: ', _mime);
+  let fileStat;
   try {
-    const url = ctx.url;
-    if (/^\/services\//.test(url) || /^\/api\//.test(url) || url == '/submit') {
-      await next();
-      return;
+    fileStat = await stat(fullStaticPath);
+  } catch (err) {
+    const notfound = ['ENOENT', 'ENAMETOOLONG', 'ENOTDIR'];
+    if (notfound.includes(err.code)) {
+      logger.error('File not exist: ', err.message);
+      throw createError(404);
     }
-    const crtAppName = getAppName(url);
-    if (url == '' || url == '/') {
-      ctx.redirect('./' + crtAppName + '/index.html');
-      return;
-    }
-    let fullStaticPath = path.join(__dirname, '../../apps', url);
-    if (url == '/main') {
-      fullStaticPath = path.join(fullStaticPath, 'index.html');
-    }
-    if (fullStaticPath.indexOf('/server/') >= 0) {
-      ctx.res.writeHead(403);
-      ctx.res.end();
-      return;
-    }
-    let _mime = getFileMime(fullStaticPath);
-    ctx.type = _mime;
-    logger.debug('staticFileMidware -- ', fullStaticPath);
-    let content;
-    if (useBinaryReader(_mime)) {
-      content = getFileContent$(fullStaticPath, undefined, logger);
+    err.status = 500;
+    throw err;
+  }
+  const lastModified = fileStat.mtime.toUTCString();
+  const ifModifiedSince = 'If-Modified-Since'.toLowerCase();
+  if (ctx.req.headers[ifModifiedSince] && lastModified == ctx.req.headers[ifModifiedSince]) {
+    logger.debug('Not modified: ', url);
+    res.writeHead(304, 'Not Modified');
+    res.end();
+  } else {
+    ctx.res.setHeader('Content-Length', fileStat.size);
+    ctx.res.setHeader('Last-Modified', lastModified);
+    if (ctx.type == 'text/html') {
+      ctx.res.setHeader('Cache-Control', `max-age=${maxCatchAge}`);
     } else {
-      content = getFileContent$(fullStaticPath, 'utf8', logger);
+      ctx.res.setHeader('Cache-Control', `public,max-age=${maxCatchAge},immutable`);
     }
-    if (content == false) {
-      if (crtAppName == 'main') {
-        /** 处理前端路由 */
-        ctx.type = 'text/html';
-        fullStaticPath = path.join(__dirname, '../../apps', crtAppName, 'index.html');
-        if (useBinaryReader(_mime)) {
-          content = getFileContent$(fullStaticPath, undefined, logger);
-        } else {
-          content = getFileContent$(fullStaticPath, 'utf8', logger);
-        }
-        ctx.body = content;
-        return;
-      }
-      ctx.res.writeHead(404);
-      ctx.body = 'Not Found';
-    } else {
-      ctx.body = content;
-    }
-  } catch (e) {
-    logger.error('staticFileMidware error', ctx.url, e.message, e.stack);
-    ctx.res.writeHead(500);
+    ctx.body = fs.createReadStream(fullStaticPath);
   }
 }
 module.exports = staticFileMidware;

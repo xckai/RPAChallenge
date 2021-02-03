@@ -57,12 +57,12 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
             isBusy: false
           });
         }else{
-          message.error(`获取列表失败，请稍后刷新重试! (${resp.data})`);
+          message.error(`获取列表失败，请稍后刷新重试! (${resp.data.msg})`);
         }
 
       })
       .catch((err: any) => {
-        message.error(`读取当前测试信息错误，请退出后重试！(${err.message})`);
+        message.error(`读取当前测试信息错误，请退出后重试！(${err.message || err.response.data})`);
       });
   }
   getTopicIndexPageURL(url: string = '') {
@@ -83,7 +83,7 @@ export class TopicInfo extends PureComponent<Partial<IProps>> {
         });
       })
       .catch((err: any) => {
-        message.error(`无法启动测试，请退出后重试！(${err.message})`);
+        message.error(`无法启动测试，请退出后重试！(${err.message || err.response.data})`);
       });
   }
   onSwitchViewBtn() {

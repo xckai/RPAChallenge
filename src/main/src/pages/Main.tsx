@@ -36,14 +36,12 @@ export class MainPage extends React.PureComponent {
             isBusy: false
           });
         }else{
-          console.error(message)
-          message.error(`获取列表失败，请稍后刷新重试! (${resp.data})`);
+          message.error(`获取列表失败，请稍后刷新重试! (${resp.data.msg})`);
         }
 
       })
       .catch((err: any) => {
-        console.error(err,"err")
-        message.error(`获取列表失败，请稍后刷新重试! (${err.message})`);
+        message.error(`获取列表失败，请稍后刷新重试! (${err.response.data})`);
       });
   }
   renderList() {

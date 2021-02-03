@@ -10,9 +10,17 @@ const axios = require('axios').default;
 const app = new Koa();
 const port = config.port;
 const logger = require('./utils/logger');
-const cluster = require('cluster');
 
 app.listen(port, '0.0.0.0');
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err) {
+    ctx.status = err.status || 500;
+    ctx.body = err.message;
+    logger.error('Commom error: ', ctx.url, " Message: ", err.message, err.stack);
+  }
+});
 app.use(staticFileMidware);
 const proxyMidware = createProxyMiddleware({
   target: config.remoteServerURL,
@@ -67,7 +75,7 @@ app.use(
 );
 
 app.on('error', (err, ctx) => {
-  logger.error('server error', ctx.url, err);
+  logger.error('Fatal server error', ctx.url, err);
 });
 
 logger.info(`Server start at : 0.0.0.0:${port}`);

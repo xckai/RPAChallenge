@@ -24,7 +24,7 @@ if ((window as any).oidcManage) {
 } else {
   oidcManager = new Oidc.UserManager(config);
 }
-Oidc.Log.logger = console;
+// Oidc.Log.logger = console;
 let token = '';
 let crtUserInfo: Oidc.User;
 axios.interceptors.response.use(
